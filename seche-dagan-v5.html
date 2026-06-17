@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sèche">
+<meta name="theme-color" content="#f05c1e">
+<title>Sèche Dagan</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#0e0e0e;--card:#1a1a1a;--card2:#222;--border:#2e2e2e;
+  --orange:#f05c1e;--og:rgba(240,92,30,0.15);
+  --text:#f0f0f0;--muted:#777;--green:#3ecf6e;--blue:#4ea8de;
+  --purple:#c060e0;--safe:env(safe-area-inset-bottom,34px);
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,'SF Pro Display','Helvetica Neue',Arial,sans-serif;font-size:15px;overflow:hidden;}
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh;}
+.app-header{background:var(--card);border-bottom:1px solid var(--border);padding:52px 20px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.app-header h1{font-size:22px;font-weight:800;letter-spacing:-0.5px;}
+.app-header h1 span{color:var(--orange);}
+.hbadge{background:var(--og);border:1px solid var(--orange);border-radius:20px;color:var(--orange);font-size:11px;font-weight:700;padding:4px 10px;}
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(100px + max(var(--safe),20px));}
+.page{display:none;padding:16px;}
+.page.active{display:block;}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;padding-bottom:max(var(--safe),20px);z-index:100;}
+.nav-btn{flex:1;background:none;border:none;color:var(--muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;font-family:inherit;}
+.nav-btn .ni{font-size:20px;line-height:1;}
+.nav-btn .nl{font-size:9px;font-weight:600;letter-spacing:0.3px;}
+.nav-btn.active{color:var(--orange);}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:12px;overflow:hidden;}
+.card-head{align-items:center;display:flex;gap:12px;padding:14px 16px;cursor:pointer;}
+.ci{font-size:22px;flex-shrink:0;}
+.cinfo{flex:1;min-width:0;}
+.ctitle{font-size:15px;font-weight:700;}
+.csub{color:var(--muted);font-size:12px;margin-top:1px;}
+.chev{color:var(--muted);font-size:18px;transition:transform .2s;flex-shrink:0;}
+.chev.open{transform:rotate(90deg);}
+.cbody{border-top:1px solid var(--border);overflow:hidden;max-height:0;transition:max-height .35s ease;}
+.cbody.open{max-height:4000px;}
+.cbi{padding:14px 16px;}
+.ex-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.ex-row:last-child{border-bottom:none;}
+.edot{width:7px;height:7px;border-radius:50%;background:var(--orange);margin-top:6px;flex-shrink:0;}
+.edot-g{background:var(--green);}
+.ename{font-size:14px;font-weight:600;}
+.edet{color:var(--muted);font-size:12px;margin-top:2px;line-height:1.4;}
+.ebadge{margin-left:auto;background:#2a2a2a;border-radius:6px;color:var(--text);font-size:12px;font-weight:700;padding:4px 9px;white-space:nowrap;flex-shrink:0;}
+.slabel{color:var(--muted);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin:20px 0 10px;}
+.slabel:first-child{margin-top:4px;}
+/* ALERT */
+.alert{background:rgba(192,96,224,0.1);border:1px solid var(--purple);border-radius:12px;display:flex;gap:10px;margin-bottom:14px;padding:12px;}
+.alert-ico{font-size:18px;flex-shrink:0;}
+.alert-txt{font-size:13px;line-height:1.5;}
+.alert-txt strong{color:var(--purple);}
+/* TODAY */
+.today-hero{background:linear-gradient(135deg,#1a0f0a,#2a1508);border:1px solid var(--orange);border-radius:16px;padding:20px;margin-bottom:16px;position:relative;overflow:hidden;}
+.today-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;background:var(--og);border-radius:50%;filter:blur(30px);}
+.tlabel{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--orange);text-transform:uppercase;}
+.ttitle{font-size:26px;font-weight:900;margin-top:4px;letter-spacing:-0.5px;}
+.tsub{color:var(--muted);font-size:13px;margin-top:4px;}
+.taction{background:var(--orange);border:none;border-radius:10px;color:#fff;cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;margin-top:16px;padding:12px 20px;width:100%;}
+/* WATER */
+.water-hero{background:linear-gradient(135deg,#0a1020,#0a1828);border:1px solid var(--blue);border-radius:16px;padding:18px;margin-bottom:14px;}
+.water-title{font-size:13px;font-weight:700;color:var(--blue);letter-spacing:1px;text-transform:uppercase;}
+.water-amount{font-size:44px;font-weight:900;color:#fff;line-height:1;margin:6px 0;}
+.water-sub{color:var(--muted);font-size:12px;margin-bottom:12px;}
+.water-glasses{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px;}
+.wglass{background:#1a2535;border:2px solid #2a3a50;border-radius:10px;cursor:pointer;font-size:19px;padding:7px 9px;transition:all .15s;}
+.wglass.full{background:rgba(78,168,222,0.2);border-color:var(--blue);}
+.water-reset{background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-family:inherit;font-size:12px;padding:6px 12px;}
+/* STEPS */
+.steps-hero{background:linear-gradient(135deg,#0a1a0a,#0f2010);border:1px solid var(--green);border-radius:16px;padding:18px;margin-bottom:14px;}
+.steps-lbl{font-size:13px;font-weight:700;color:var(--green);letter-spacing:1px;text-transform:uppercase;}
+.steps-amt{font-size:44px;font-weight:900;color:#fff;line-height:1;margin:6px 0;}
+.steps-sub{color:var(--muted);font-size:12px;margin-bottom:12px;}
+.steps-bar-bg{background:#1a2a1a;border-radius:6px;height:9px;overflow:hidden;margin-bottom:10px;}
+.steps-bar-fill{height:100%;background:linear-gradient(90deg,var(--green),#80ff80);border-radius:6px;transition:width .5s;}
+.steps-btns{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px;}
+.sbtn{background:#1a2a1a;border:1px solid #2a4a2a;border-radius:9px;color:var(--green);cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;padding:8px 13px;}
+.steps-reset{background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-family:inherit;font-size:12px;padding:6px 12px;}
+/* KCAL */
+.kcal-hero{background:linear-gradient(135deg,#1a0a1a,#2a0a20);border:1px solid var(--purple);border-radius:16px;padding:18px;margin-bottom:14px;}
+.kcal-lbl{font-size:13px;font-weight:700;color:var(--purple);letter-spacing:1px;text-transform:uppercase;}
+.kcal-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0;}
+.kcal-box{background:rgba(192,96,224,0.1);border:1px solid rgba(192,96,224,0.3);border-radius:10px;padding:11px;text-align:center;}
+.kcal-val{font-size:22px;font-weight:900;color:var(--purple);line-height:1;}
+.kcal-unit{font-size:11px;color:var(--purple);}
+.kcal-sub{font-size:10px;color:var(--muted);margin-top:2px;text-transform:uppercase;}
+.kcal-def{text-align:center;margin-top:10px;}
+.kcal-def-val{font-size:32px;font-weight:900;}
+.kcal-def-lbl{font-size:12px;color:var(--muted);margin-top:2px;}
+.def-ok{color:var(--green);}
+.def-low{color:#f0a030;}
+.def-high{color:#e04040;}
+/* WEEK GRID */
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:14px;}
+.dp{border-radius:8px;padding:7px 3px;text-align:center;border:1px solid var(--border);}
+.dp .dn{font-size:9px;color:var(--muted);font-weight:600;text-transform:uppercase;}
+.dp .dt{font-size:10px;font-weight:700;margin-top:3px;line-height:1.3;}
+.dp-t{background:var(--og);border-color:var(--orange);}
+.dp-t .dt{color:var(--orange);}
+.dp-c{background:rgba(62,207,110,0.08);border-color:var(--green);}
+.dp-c .dt{color:var(--green);}
+.dp-r .dt{color:var(--muted);}
+.dp.today-dp{box-shadow:0 0 0 2px #fff;}
+/* GLOBAL PROGRESS */
+.gp{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px;}
+.gph{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
+.gpt{font-size:14px;font-weight:700;}
+.gpp{font-size:22px;font-weight:900;color:var(--orange);}
+.pbb{background:#2a2a2a;border-radius:6px;height:8px;overflow:hidden;}
+.pbf{height:100%;background:linear-gradient(90deg,var(--orange),#ff8c42);border-radius:6px;transition:width .5s;}
+.pbs{color:var(--muted);font-size:11px;margin-top:8px;}
+/* TIPS */
+.tip{background:var(--card2);border-left:3px solid var(--orange);border-radius:0 10px 10px 0;display:flex;gap:10px;margin-bottom:10px;padding:12px;}
+.tico{font-size:18px;flex-shrink:0;}
+.ttxt{font-size:13px;line-height:1.5;}
+.ttxt strong{color:var(--orange);}
+/* NUTRI */
+.nutri-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.nbox{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;}
+.nval{font-size:26px;font-weight:900;color:var(--orange);line-height:1;}
+.nunit{font-size:12px;color:var(--orange);font-weight:600;}
+.nlbl{font-size:11px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:0.8px;}
+/* RECETTES */
+.recipe-card{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden;}
+.recipe-head{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;}
+.recipe-emoji{font-size:26px;flex-shrink:0;}
+.recipe-info{flex:1;}
+.recipe-name{font-size:14px;font-weight:700;}
+.recipe-meta{color:var(--muted);font-size:12px;margin-top:2px;}
+.recipe-tag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;flex-shrink:0;}
+.rt-main{background:var(--og);color:var(--orange);border:1px solid var(--orange);}
+.rt-alt{background:rgba(62,207,110,0.1);color:var(--green);border:1px solid var(--green);}
+.recipe-body{border-top:1px solid var(--border);max-height:0;overflow:hidden;transition:max-height .35s ease;}
+.recipe-body.open{max-height:2000px;}
+.recipe-bi{padding:14px 16px;}
+.ingr-item{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;}
+.ingr-item::before{content:'·';color:var(--orange);font-size:18px;}
+.steps-title{color:var(--orange);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin:10px 0 8px;}
+.step-item{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);}
+.step-item:last-child{border-bottom:none;}
+.step-num{background:var(--orange);border-radius:50%;color:#fff;font-size:11px;font-weight:800;width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.step-txt{font-size:13px;line-height:1.5;}
+.macros-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;}
+.macro-box{background:#1e1e1e;border-radius:8px;padding:8px;text-align:center;}
+.macro-val{font-size:17px;font-weight:900;color:var(--orange);}
+.macro-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;}
+/* FOOD JOURNAL */
+.fj-hero{background:linear-gradient(135deg,#0a1a10,#0f2018);border:1px solid var(--green);border-radius:16px;padding:18px;margin-bottom:16px;}
+.fj-title{font-size:13px;font-weight:700;color:var(--green);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;}
+.fj-totals{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.fj-box{background:rgba(62,207,110,0.1);border:1px solid rgba(62,207,110,0.3);border-radius:10px;padding:10px;text-align:center;}
+.fj-val{font-size:20px;font-weight:900;color:var(--green);line-height:1;}
+.fj-lbl{font-size:10px;color:var(--muted);margin-top:2px;text-transform:uppercase;}
+.fj-bar-bg{background:#1a2a1a;border-radius:6px;height:8px;overflow:hidden;margin-bottom:6px;}
+.fj-bar-fill{height:100%;border-radius:6px;transition:width .4s;}
+.fj-bar-txt{font-size:11px;color:var(--muted);text-align:center;margin-bottom:12px;}
+.fj-reset-btn{background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-family:inherit;font-size:12px;padding:8px;width:100%;}
+.fj-meal{margin-bottom:14px;}
+.fj-meal-title{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;}
+.fj-item{display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;padding:10px 12px;cursor:pointer;transition:all .15s;}
+.fj-item.selected{background:rgba(62,207,110,0.1);border-color:var(--green);}
+.fj-check{width:22px;height:22px;border:2px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;}
+.fj-item-info{flex:1;min-width:0;}
+.fj-item-name{font-size:13px;font-weight:600;}
+.fj-item-detail{font-size:11px;color:var(--muted);margin-top:1px;}
+.fj-item-kcal{font-size:13px;font-weight:700;color:var(--orange);flex-shrink:0;}
+/* TRACKER */
+.wt{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden;}
+.wth{align-items:center;display:flex;gap:10px;padding:13px 15px;cursor:pointer;}
+.wtnum{background:var(--og);border:1px solid var(--orange);border-radius:8px;color:var(--orange);font-size:13px;font-weight:800;padding:4px 9px;flex-shrink:0;}
+.wtinfo{flex:1;}
+.wttitle{font-size:14px;font-weight:700;}
+.wtsub{color:var(--muted);font-size:12px;}
+.wtprog{color:var(--muted);font-size:12px;font-weight:600;flex-shrink:0;}
+.wtdays{border-top:1px solid var(--border);padding:12px;display:none;}
+.wtdays.open{display:block;}
+.daychecks{display:flex;flex-wrap:wrap;gap:8px;}
+.dcheck{background:#222;border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;padding:7px 12px;transition:all .15s;}
+.dcheck.done{background:rgba(62,207,110,0.12);border-color:var(--green);color:var(--green);}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="app-header">
+    <h1>💪 Sèche <span>Dagan</span></h1>
+    <div class="hbadge" id="week-badge">S1</div>
+  </div>
+  <div class="content">
+
+    <!-- ACCUEIL -->
+    <div class="page active" id="page-home">
+      <div class="today-hero">
+        <div class="tlabel">Aujourd'hui</div>
+        <div class="ttitle" id="today-title">Chargement…</div>
+        <div class="tsub" id="today-sub"></div>
+        <button class="taction" id="today-action">Voir la séance →</button>
+      </div>
+      <div class="water-hero">
+        <div class="water-title">💧 Hydratation</div>
+        <div class="water-amount" id="water-amount">0 / 2.5L</div>
+        <div class="water-sub">Objectif : 2.5L · Phase 3 : 3L</div>
+        <div class="water-glasses" id="water-glasses"></div>
+        <button class="water-reset" onclick="resetWater()">Remettre à zéro</button>
+      </div>
+      <div class="steps-hero">
+        <div class="steps-lbl">👟 Pas du jour</div>
+        <div class="steps-amt" id="steps-amount">0 / 10 000</div>
+        <div class="steps-sub">~300-400 kcal brûlés à 10 000 pas</div>
+        <div class="steps-bar-bg"><div class="steps-bar-fill" id="steps-fill" style="width:0%"></div></div>
+        <div class="steps-btns">
+          <button class="sbtn" onclick="addSteps(1000)">+1 000</button>
+          <button class="sbtn" onclick="addSteps(2000)">+2 000</button>
+          <button class="sbtn" onclick="addSteps(5000)">+5 000</button>
+          <button class="sbtn" onclick="addSteps(10000)">✅ 10k</button>
+        </div>
+        <button class="steps-reset" onclick="resetSteps()">Remettre à zéro</button>
+      </div>
+      <div class="kcal-hero">
+        <div class="kcal-lbl">🔥 Bilan calorique</div>
+        <div class="kcal-grid">
+          <div class="kcal-box"><div class="kcal-val">2320</div><div class="kcal-sub">Dépense base</div></div>
+          <div class="kcal-box"><div class="kcal-val" id="kcal-steps-burn">0</div><div class="kcal-sub">Brûlé (pas)</div></div>
+          <div class="kcal-box"><div class="kcal-val" id="kcal-eaten">0</div><div class="kcal-sub">Mangé (journal)</div></div>
+          <div class="kcal-box"><div class="kcal-val" id="kcal-total">2320</div><div class="kcal-sub">Dépense totale</div></div>
+        </div>
+        <div class="kcal-def">
+          <div class="kcal-def-val def-ok" id="kcal-def-val">-320</div>
+          <div class="kcal-def-lbl" id="kcal-def-lbl">Déficit · Objectif -300 à -500 kcal</div>
+        </div>
+      </div>
+      <div class="slabel">Cette semaine</div>
+      <div class="week-grid" id="week-grid"></div>
+      <div class="gp">
+        <div class="gph"><div class="gpt">Progression totale</div><div class="gpp" id="home-pct">0%</div></div>
+        <div class="pbb"><div class="pbf" id="home-fill" style="width:0%"></div></div>
+        <div class="pbs" id="home-sub">0 séances sur 60</div>
+      </div>
+      <div class="slabel">Rappels</div>
+      <div class="tip"><div class="tico">🥩</div><div class="ttxt"><strong>Protéines à chaque repas</strong> — 30g par repas minimum</div></div>
+      <div class="tip"><div class="tico">🚫</div><div class="ttxt"><strong>Zéro sucre liquide</strong> — Eau, café noir uniquement</div></div>
+      <div class="tip"><div class="tico">😴</div><div class="ttxt"><strong>7h de sommeil minimum</strong> — Aussi important que la séance</div></div>
+    </div>
+
+    <!-- SÉANCES -->
+    <div class="page" id="page-seances">
+      <div class="alert">
+        <div class="alert-ico">⚠️</div>
+        <div class="alert-txt"><strong>Épaule droite déboîtée</strong> — Les exercices marqués 🔵 sont adaptés pour toi. Évite les charges lourdes sur l'épaule droite, privilégie le mouvement contrôlé et sans douleur.</div>
+      </div>
+      <div class="slabel">Programme semaine type</div>
+
+      <div class="card">
+        <div class="card-head" onclick="toggleCard(this)">
+          <div class="ci">🔥</div><div class="cinfo"><div class="ctitle">Lundi — Push (Épaules/Poitrine/Tri)</div><div class="csub">~45 min · Adapté épaule droite</div></div><div class="chev">›</div>
+        </div>
+        <div class="cbody"><div class="cbi">
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">🔵 Pike push-ups</div><div class="edet">Pieds surélevés, corps en V — adapté épaule droite</div></div><div class="ebadge">4×12</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">🔵 Développé épaules — bras gauche uniquement</div><div class="edet">6kg, tempo 2-0-2 — protège l'épaule droite</div></div><div class="ebadge">4×15</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">🔵 Élévation latérale gauche uniquement</div><div class="edet">6kg, lent — travail unilatéral</div></div><div class="ebadge">4×15</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">🔵 Rotation externe épaule droite (élastique)</div><div class="edet">Rééducation — coude à 90°, rotation lente vers l'extérieur</div></div><div class="ebadge">3×20</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">Pompes prise large</div><div class="edet">Arrête si douleur épaule droite</div></div><div class="ebadge">3×Max</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">Dips entre deux chaises</div></div><div class="ebadge">3×12</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">Face pulls élastique</div><div class="edet">Coudes hauts, tire vers les oreilles</div></div><div class="ebadge">3×20</div></div>
+        </div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head" onclick="toggleCard(this)">
+          <div class="ci">🏋️</div><div class="cinfo"><div class="ctitle">Mardi — Pull (Dos/Biceps)</div><div class="csub">~40 min</div></div><div class="chev">›</div>
+        </div>
+        <div class="cbody"><div class="cbi">
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">🔵 Tractions sur poutre</div><div class="edet">Grip en supination si possible, amplitude selon douleur épaule droite</div></div><div class="ebadge">4×Max</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">Curl haltères 6kg</div><div class="edet">Supination complète, descends lentement</div></div><div class="ebadge">4×15</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">Rowing 1 bras gauche 6kg</div><div class="edet">Appui genou, coude vers le plafond</div></div><div class="ebadge">4×15</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">🔵 Rowing bras droit léger</div><div class="edet">Mouvement réduit si douleur — écoute ton corps</div></div><div class="ebadge">3×12</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">Superman sol</div></div><div class="ebadge">3×15</div></div>
+        </div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head" onclick="toggleCard(this)">
+          <div class="ci">⚡</div><div class="cinfo"><div class="ctitle">Mercredi — HIIT Cardio</div><div class="csub">20 min · Brûle-graisses</div></div><div class="chev">›</div>
+        </div>
+        <div class="cbody"><div class="cbi">
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">Échauffement</div><div class="edet">5 min jumping jacks ou marche rapide</div></div><div class="ebadge">5 min</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">Tabata R1 — Burpees</div><div class="edet">20s / 10s repos × 8</div></div><div class="ebadge">4 min</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">Tabata R2 — Mountain climbers</div><div class="edet">20s / 10s repos × 8</div></div><div class="ebadge">4 min</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">Tabata R3 — Jump squats</div><div class="edet">20s / 10s repos × 8</div></div><div class="ebadge">4 min</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">Retour au calme</div></div><div class="ebadge">5 min</div></div>
+        </div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head" onclick="toggleCard(this)">
+          <div class="ci">🦵</div><div class="cinfo"><div class="ctitle">Jeudi — Legs + Abdos + Obliques</div><div class="csub">~55 min · Poignées d'amour 🔥</div></div><div class="chev">›</div>
+        </div>
+        <div class="cbody"><div class="cbi">
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">Squats bulgares</div><div class="edet">Pied arrière surélevé</div></div><div class="ebadge">4×12</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">Hip thrust</div><div class="edet">Épaules au canapé, poids cheville 8kg</div></div><div class="ebadge">4×20</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">Leg curl poids cheville</div></div><div class="ebadge">3×15</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">Abduction élastique</div></div><div class="ebadge">3×20</div></div>
+          <div class="ex-row"><div class="edot edot-g"></div><div><div class="ename">Crunchs lents</div><div class="edet">Expire en montant, squeeze 1s</div></div><div class="ebadge">4×20</div></div>
+          <div class="ex-row"><div class="edot edot-g"></div><div><div class="ename">Relevés de jambes</div><div class="edet">Jambes tendues, sans toucher le sol</div></div><div class="ebadge">4×15</div></div>
+          <div class="ex-row"><div class="edot edot-g"></div><div><div class="ename">Russian twists lestés 6kg</div><div class="edet">🔥 Obliques = poignées d'amour — pieds levés, rotation max</div></div><div class="ebadge">4×20</div></div>
+          <div class="ex-row"><div class="edot edot-g"></div><div><div class="ename">Woodchop sol (sans lest)</div><div class="edet">🔥 Mains jointes, rotation diagonale hanche→épaule opposée</div></div><div class="ebadge">3×15</div></div>
+          <div class="ex-row"><div class="edot edot-g"></div><div><div class="ename">Gainage latéral</div><div class="edet">🔥 Obliques — tiens la position, hanches levées</div></div><div class="ebadge">3×40s</div></div>
+          <div class="ex-row"><div class="edot edot-g"></div><div><div class="ename">Planche classique</div></div><div class="ebadge">3×45s</div></div>
+        </div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head" onclick="toggleCard(this)">
+          <div class="ci">💫</div><div class="cinfo"><div class="ctitle">Vendredi — Full Upper (épaules)</div><div class="csub">~45 min · Adapté épaule droite</div></div><div class="chev">›</div>
+        </div>
+        <div class="cbody"><div class="cbi">
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">🔵 Arnold press bras gauche uniquement</div><div class="edet">6kg — épaule droite au repos</div></div><div class="ebadge">4×12</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">🔵 Tractions sur poutre</div><div class="edet">Prise en supination, amplitude confortable</div></div><div class="ebadge">3×Max</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">Pompes diamant</div></div><div class="ebadge">3×12</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">🔵 Oiseau bras gauche</div><div class="edet">Penché 45°, épaule arrière gauche</div></div><div class="ebadge">4×15</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">🔵 Rotation externe droite élastique</div><div class="edet">Rééducation épaule — 3×20 lent</div></div><div class="ebadge">3×20</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">Curl isométrique haltère</div><div class="edet">Tenir 30s à 90°</div></div><div class="ebadge">3×30s</div></div>
+        </div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head" onclick="toggleCard(this)">
+          <div class="ci">🏃</div><div class="cinfo"><div class="ctitle">Samedi — Cardio</div><div class="csub">Marche / Run · 30-45 min</div></div><div class="chev">›</div>
+        </div>
+        <div class="cbody"><div class="cbi">
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">S1→S7 : Marche rapide</div><div class="edet">45 min · 5-6 km/h · Zone 2</div></div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">S8→S10 : Run léger</div><div class="edet">30 min · Conversation possible</div></div></div>
+        </div></div>
+      </div>
+
+      <div class="slabel">🔵 Rééducation épaule droite</div>
+      <div class="card">
+        <div class="card-head" onclick="toggleCard(this)">
+          <div class="ci">🩺</div><div class="cinfo"><div class="ctitle">Exercices rééducation épaule</div><div class="csub">À faire tous les jours · 10 min</div></div><div class="chev">›</div>
+        </div>
+        <div class="cbody"><div class="cbi">
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">Rotation externe élastique</div><div class="edet">Coude à 90° contre le corps, tire l'élastique vers l'extérieur — lent et contrôlé</div></div><div class="ebadge">3×20</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">Pendule de Codman</div><div class="edet">Penché en avant, bras pendant, cercles lents — décompresse l'articulation</div></div><div class="ebadge">2×30s</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">Élévation frontale légère</div><div class="edet">Bras tendu, monte jusqu'à l'horizontale seulement — pas au-dessus</div></div><div class="ebadge">3×15</div></div>
+          <div class="ex-row"><div class="edot"></div><div><div class="ename">Étirement pec/épaule</div><div class="edet">Bras contre un mur à 90°, rotation douce du buste</div></div><div class="ebadge">3×30s</div></div>
+          <div class="tip" style="margin-top:10px;margin-bottom:0"><div class="tico">⚕️</div><div class="ttxt"><strong>Important</strong> — Si tu ressens de la douleur (pas juste tension), arrête l'exercice. Consulte un kiné si ça persiste.</div></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- JOURNAL CALORIES -->
+    <div class="page" id="page-journal">
+      <div class="fj-hero">
+        <div class="fj-title">📊 Journal alimentaire du jour</div>
+        <div class="fj-totals">
+          <div class="fj-box"><div class="fj-val" id="fj-kcal">0</div><div class="fj-lbl">Kcal</div></div>
+          <div class="fj-box"><div class="fj-val" id="fj-prot">0g</div><div class="fj-lbl">Protéines</div></div>
+          <div class="fj-box"><div class="fj-val" id="fj-remain">2000</div><div class="fj-lbl">Restant</div></div>
+        </div>
+        <div class="fj-bar-bg"><div class="fj-bar-fill" id="fj-bar" style="width:0%;background:var(--green)"></div></div>
+        <div class="fj-bar-txt" id="fj-bar-txt">0 / 2000 kcal</div>
+        <button class="fj-reset-btn" onclick="resetJournal()">🗑️ Remettre à zéro</button>
+      </div>
+      <div id="fj-meals-container"></div>
+    </div>
+
+    <!-- RECETTES -->
+    <div class="page" id="page-nutri">
+      <div class="nutri-row">
+        <div class="nbox"><div class="nval">~2000</div><div class="nunit">kcal</div><div class="nlbl">Objectif/jour</div></div>
+        <div class="nbox"><div class="nval">120<span class="nunit">g</span></div><div class="nlbl">Protéines min</div></div>
+      </div>
+      <div class="tip"><div class="tico">🥩</div><div class="ttxt"><strong>Protéines à chaque repas</strong> — 30g par repas</div></div>
+      <div class="tip"><div class="tico">🚫</div><div class="ttxt"><strong>Zéro sucre liquide</strong> — Sodas, jus = ennemi n°1</div></div>
+      <div class="tip"><div class="tico">🍞</div><div class="ttxt"><strong>Glucides avant/après sport</strong> — Le soir : protéines + légumes</div></div>
+      <div class="tip"><div class="tico">🎉</div><div class="ttxt"><strong>Cheat meal 1x/semaine max</strong> — 1 repas, pas une journée</div></div>
+
+      <div class="slabel">🍳 Petit-déjeuner</div>
+
+      <div class="recipe-card">
+        <div class="recipe-head" onclick="toggleRecipe(this)">
+          <div class="recipe-emoji">🍳</div>
+          <div class="recipe-info"><div class="recipe-name">Œufs brouillés avocat pain de mie</div><div class="recipe-meta">Matin · 5 min · ~35g protéines</div></div>
+          <div class="recipe-tag rt-main">MAIN</div>
+        </div>
+        <div class="recipe-body"><div class="recipe-bi">
+          <div class="ingr-item">3-4 œufs entiers</div>
+          <div class="ingr-item">1 tranche pain de mie (boulangerie de préférence)</div>
+          <div class="ingr-item">½ avocat</div>
+          <div class="ingr-item">Poivre + herbes</div>
+          <div class="steps-title">Préparation</div>
+          <div class="step-item"><div class="step-num">1</div><div class="step-txt">Casse les œufs dans une poêle chaude avec une pointe d'huile</div></div>
+          <div class="step-item"><div class="step-num">2</div><div class="step-txt">Brouille doucement, feu moyen, poivre + herbes</div></div>
+          <div class="step-item"><div class="step-num">3</div><div class="step-txt">Pain toasté, avocat en tranches, œufs par-dessus</div></div>
+          <div class="macros-row">
+            <div class="macro-box"><div class="macro-val">~35g</div><div class="macro-lbl">Protéines</div></div>
+            <div class="macro-box"><div class="macro-val">~420</div><div class="macro-lbl">Kcal</div></div>
+            <div class="macro-box"><div class="macro-val">5 min</div><div class="macro-lbl">Prépa</div></div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="recipe-card">
+        <div class="recipe-head" onclick="toggleRecipe(this)">
+          <div class="recipe-emoji">🥛</div>
+          <div class="recipe-info"><div class="recipe-name">Yaourt grec + flocons d'avoine</div><div class="recipe-meta">Si pas d'œufs · 2 min · ~25g protéines</div></div>
+          <div class="recipe-tag rt-alt">ALT</div>
+        </div>
+        <div class="recipe-body"><div class="recipe-bi">
+          <div class="ingr-item">200g yaourt grec nature</div>
+          <div class="ingr-item">50g flocons d'avoine</div>
+          <div class="ingr-item">1 banane ou brugnon</div>
+          <div class="steps-title">Préparation</div>
+          <div class="step-item"><div class="step-num">1</div><div class="step-txt">Mélange yaourt + flocons dans un bol</div></div>
+          <div class="step-item"><div class="step-num">2</div><div class="step-txt">Fruit coupé dessus — mange direct ou prépare la veille</div></div>
+          <div class="macros-row">
+            <div class="macro-box"><div class="macro-val">~25g</div><div class="macro-lbl">Protéines</div></div>
+            <div class="macro-box"><div class="macro-val">~380</div><div class="macro-lbl">Kcal</div></div>
+            <div class="macro-box"><div class="macro-val">2 min</div><div class="macro-lbl">Prépa</div></div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="slabel">🍽️ Déjeuner</div>
+
+      <div class="recipe-card">
+        <div class="recipe-head" onclick="toggleRecipe(this)">
+          <div class="recipe-emoji">🍗</div>
+          <div class="recipe-info"><div class="recipe-name">Bowl poulet riz tomate</div><div class="recipe-meta">Déjeuner · 15 min · ~42g protéines</div></div>
+          <div class="recipe-tag rt-main">MAIN</div>
+        </div>
+        <div class="recipe-body"><div class="recipe-bi">
+          <div class="ingr-item">150g blanc de poulet</div>
+          <div class="ingr-item">70-80g riz cru</div>
+          <div class="ingr-item">1 tomate ou tomates cerises</div>
+          <div class="ingr-item">Ail en poudre + herbes de Provence</div>
+          <div class="steps-title">Préparation</div>
+          <div class="step-item"><div class="step-num">1</div><div class="step-txt">Cuis le riz 10-12 min à feu moyen — égoutte direct</div></div>
+          <div class="step-item"><div class="step-num">2</div><div class="step-txt">Poulet en dés à la poêle sans huile, ail + herbes, 6-8 min</div></div>
+          <div class="step-item"><div class="step-num">3</div><div class="step-txt">Tomate coupée à côté ou dans le bol</div></div>
+          <div class="macros-row">
+            <div class="macro-box"><div class="macro-val">~42g</div><div class="macro-lbl">Protéines</div></div>
+            <div class="macro-box"><div class="macro-val">~500</div><div class="macro-lbl">Kcal</div></div>
+            <div class="macro-box"><div class="macro-val">15 min</div><div class="macro-lbl">Prépa</div></div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="recipe-card">
+        <div class="recipe-head" onclick="toggleRecipe(this)">
+          <div class="recipe-emoji">🥩</div>
+          <div class="recipe-info"><div class="recipe-name">Steak haché · Pâtes · Tomates cerises</div><div class="recipe-meta">Déjeuner/Dîner · 15 min · ~43g protéines</div></div>
+          <div class="recipe-tag rt-main">MAIN</div>
+        </div>
+        <div class="recipe-body"><div class="recipe-bi">
+          <div class="ingr-item">1 steak haché boucher (~150g)</div>
+          <div class="ingr-item">80g pâtes (penne ou tagliatelles)</div>
+          <div class="ingr-item">150g tomates cerises</div>
+          <div class="ingr-item">Ail en poudre + herbes de Provence</div>
+          <div class="steps-title">Préparation</div>
+          <div class="step-item"><div class="step-num">1</div><div class="step-txt">Cuis les pâtes al dente (10 min eau bouillante)</div></div>
+          <div class="step-item"><div class="step-num">2</div><div class="step-txt">Steak sans huile à la poêle, 3-4 min chaque côté, réserve</div></div>
+          <div class="step-item"><div class="step-num">3</div><div class="step-txt">Tomates cerises dans la même poêle feu vif 2-3 min — elles éclatent et font leur sauce</div></div>
+          <div class="step-item"><div class="step-num">4</div><div class="step-txt">Ail + herbes, mélange pâtes + sauce, steak coupé par-dessus</div></div>
+          <div class="macros-row">
+            <div class="macro-box"><div class="macro-val">~43g</div><div class="macro-lbl">Protéines</div></div>
+            <div class="macro-box"><div class="macro-val">~580</div><div class="macro-lbl">Kcal</div></div>
+            <div class="macro-box"><div class="macro-val">15 min</div><div class="macro-lbl">Prépa</div></div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="recipe-card">
+        <div class="recipe-head" onclick="toggleRecipe(this)">
+          <div class="recipe-emoji">🥗</div>
+          <div class="recipe-info"><div class="recipe-name">Salade thon maïs tomates</div><div class="recipe-meta">Rapide · 3 min · ~35g protéines</div></div>
+          <div class="recipe-tag rt-main">MAIN</div>
+        </div>
+        <div class="recipe-body"><div class="recipe-bi">
+          <div class="ingr-item">1 boîte thon au naturel (160g)</div>
+          <div class="ingr-item">Maïs en boîte</div>
+          <div class="ingr-item">Tomates cerises</div>
+          <div class="ingr-item">Huile olive + vinaigre</div>
+          <div class="steps-title">Préparation</div>
+          <div class="step-item"><div class="step-num">1</div><div class="step-txt">Égoutter thon + maïs, couper tomates</div></div>
+          <div class="step-item"><div class="step-num">2</div><div class="step-txt">Mélanger, filet huile + vinaigre — c'est tout</div></div>
+          <div class="macros-row">
+            <div class="macro-box"><div class="macro-val">~35g</div><div class="macro-lbl">Protéines</div></div>
+            <div class="macro-box"><div class="macro-val">~320</div><div class="macro-lbl">Kcal</div></div>
+            <div class="macro-box"><div class="macro-val">3 min</div><div class="macro-lbl">Prépa</div></div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="recipe-card">
+        <div class="recipe-head" onclick="toggleRecipe(this)">
+          <div class="recipe-emoji">🥚</div>
+          <div class="recipe-info"><div class="recipe-name">Omelette jambon + riz</div><div class="recipe-meta">Si pas de poulet · 10 min · ~40g protéines</div></div>
+          <div class="recipe-tag rt-alt">ALT</div>
+        </div>
+        <div class="recipe-body"><div class="recipe-bi">
+          <div class="ingr-item">4 œufs entiers</div>
+          <div class="ingr-item">2 tranches jambon blanc</div>
+          <div class="ingr-item">30g fromage râpé allégé</div>
+          <div class="ingr-item">100g riz cuit</div>
+          <div class="steps-title">Préparation</div>
+          <div class="step-item"><div class="step-num">1</div><div class="step-txt">Bats les œufs, verse en poêle chaude légèrement huilée</div></div>
+          <div class="step-item"><div class="step-num">2</div><div class="step-txt">Jambon + fromage sur une moitié, plie l'omelette</div></div>
+          <div class="step-item"><div class="step-num">3</div><div class="step-txt">Riz réchauffé au micro-ondes à côté</div></div>
+          <div class="macros-row">
+            <div class="macro-box"><div class="macro-val">~40g</div><div class="macro-lbl">Protéines</div></div>
+            <div class="macro-box"><div class="macro-val">~520</div><div class="macro-lbl">Kcal</div></div>
+            <div class="macro-box"><div class="macro-val">10 min</div><div class="macro-lbl">Prépa</div></div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="recipe-card">
+        <div class="recipe-head" onclick="toggleRecipe(this)">
+          <div class="recipe-emoji">🥫</div>
+          <div class="recipe-info"><div class="recipe-name">Pâtes thon sauce tomate</div><div class="recipe-meta">Frigo vide · 12 min · ~35g protéines</div></div>
+          <div class="recipe-tag rt-alt">ALT</div>
+        </div>
+        <div class="recipe-body"><div class="recipe-bi">
+          <div class="ingr-item">100g pâtes</div>
+          <div class="ingr-item">1 boîte thon au naturel</div>
+          <div class="ingr-item">½ boîte tomates pelées</div>
+          <div class="ingr-item">Ail + origan</div>
+          <div class="steps-title">Préparation</div>
+          <div class="step-item"><div class="step-num">1</div><div class="step-txt">Cuis les pâtes al dente</div></div>
+          <div class="step-item"><div class="step-num">2</div><div class="step-txt">Tomates + ail + origan dans une poêle, 3 min</div></div>
+          <div class="step-item"><div class="step-num">3</div><div class="step-txt">Thon égoutté dans la sauce, mélange avec les pâtes</div></div>
+          <div class="macros-row">
+            <div class="macro-box"><div class="macro-val">~35g</div><div class="macro-lbl">Protéines</div></div>
+            <div class="macro-box"><div class="macro-val">~580</div><div class="macro-lbl">Kcal</div></div>
+            <div class="macro-box"><div class="macro-val">12 min</div><div class="macro-lbl">Prépa</div></div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="slabel">🌙 Dîner</div>
+
+      <div class="recipe-card">
+        <div class="recipe-head" onclick="toggleRecipe(this)">
+          <div class="recipe-emoji">🥩</div>
+          <div class="recipe-info"><div class="recipe-name">Steak haché + légumes rôtis</div><div class="recipe-meta">Dîner · 20 min · ~40g protéines</div></div>
+          <div class="recipe-tag rt-main">MAIN</div>
+        </div>
+        <div class="recipe-body"><div class="recipe-bi">
+          <div class="ingr-item">2 steaks hachés boucher (~200g)</div>
+          <div class="ingr-item">Courgette + poivron + oignon</div>
+          <div class="ingr-item">Herbes de Provence</div>
+          <div class="ingr-item">Fromage blanc 0% (dessert)</div>
+          <div class="steps-title">Préparation</div>
+          <div class="step-item"><div class="step-num">1</div><div class="step-txt">Légumes en dés, four 200° avec herbes — 20 min</div></div>
+          <div class="step-item"><div class="step-num">2</div><div class="step-txt">Steaks à la poêle sans huile, 3-4 min chaque côté</div></div>
+          <div class="step-item"><div class="step-num">3</div><div class="step-txt">Fromage blanc nature en dessert</div></div>
+          <div class="macros-row">
+            <div class="macro-box"><div class="macro-val">~40g</div><div class="macro-lbl">Protéines</div></div>
+            <div class="macro-box"><div class="macro-val">~420</div><div class="macro-lbl">Kcal</div></div>
+            <div class="macro-box"><div class="macro-val">20 min</div><div class="macro-lbl">Prépa</div></div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="recipe-card">
+        <div class="recipe-head" onclick="toggleRecipe(this)">
+          <div class="recipe-emoji">🐟</div>
+          <div class="recipe-info"><div class="recipe-name">Poisson blanc + légumes vapeur</div><div class="recipe-meta">Dîner léger · 15 min · ~38g protéines</div></div>
+          <div class="recipe-tag rt-main">MAIN</div>
+        </div>
+        <div class="recipe-body"><div class="recipe-bi">
+          <div class="ingr-item">200g cabillaud, merlu ou colin</div>
+          <div class="ingr-item">Brocoli + carottes ou courgette</div>
+          <div class="ingr-item">Citron + herbes</div>
+          <div class="steps-title">Préparation</div>
+          <div class="step-item"><div class="step-num">1</div><div class="step-txt">Légumes vapeur micro-ondes 4-5 min</div></div>
+          <div class="step-item"><div class="step-num">2</div><div class="step-txt">Poisson à la poêle sans huile, citron + herbes, 4 min chaque côté</div></div>
+          <div class="macros-row">
+            <div class="macro-box"><div class="macro-val">~38g</div><div class="macro-lbl">Protéines</div></div>
+            <div class="macro-box"><div class="macro-val">~290</div><div class="macro-lbl">Kcal</div></div>
+            <div class="macro-box"><div class="macro-val">15 min</div><div class="macro-lbl">Prépa</div></div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="recipe-card">
+        <div class="recipe-head" onclick="toggleRecipe(this)">
+          <div class="recipe-emoji">🥗</div>
+          <div class="recipe-info"><div class="recipe-name">Poulet + crudités</div><div class="recipe-meta">Dîner express · 10 min · ~35g protéines</div></div>
+          <div class="recipe-tag rt-main">MAIN</div>
+        </div>
+        <div class="recipe-body"><div class="recipe-bi">
+          <div class="ingr-item">150g blanc de poulet</div>
+          <div class="ingr-item">Tomate + concombre + carottes</div>
+          <div class="ingr-item">Herbes de Provence</div>
+          <div class="steps-title">Préparation</div>
+          <div class="step-item"><div class="step-num">1</div><div class="step-txt">Poulet à la poêle sans huile, herbes, 6-8 min</div></div>
+          <div class="step-item"><div class="step-num">2</div><div class="step-txt">Crudités coupées à côté — aucune sauce nécessaire</div></div>
+          <div class="macros-row">
+            <div class="macro-box"><div class="macro-val">~35g</div><div class="macro-lbl">Protéines</div></div>
+            <div class="macro-box"><div class="macro-val">~230</div><div class="macro-lbl">Kcal</div></div>
+            <div class="macro-box"><div class="macro-val">10 min</div><div class="macro-lbl">Prépa</div></div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="slabel">⚡ Collations</div>
+
+      <div class="recipe-card">
+        <div class="recipe-head" onclick="toggleRecipe(this)">
+          <div class="recipe-emoji">🥛</div>
+          <div class="recipe-info"><div class="recipe-name">Fromage blanc + amandes</div><div class="recipe-meta">Collation · 1 min · ~22g protéines</div></div>
+          <div class="recipe-tag rt-main">MAIN</div>
+        </div>
+        <div class="recipe-body"><div class="recipe-bi">
+          <div class="ingr-item">200g fromage blanc 0%</div>
+          <div class="ingr-item">20g amandes</div>
+          <div class="ingr-item">1 brugnon ou fruit de saison</div>
+          <div class="macros-row">
+            <div class="macro-box"><div class="macro-val">~22g</div><div class="macro-lbl">Protéines</div></div>
+            <div class="macro-box"><div class="macro-val">~230</div><div class="macro-lbl">Kcal</div></div>
+            <div class="macro-box"><div class="macro-val">1 min</div><div class="macro-lbl">Prépa</div></div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="recipe-card">
+        <div class="recipe-head" onclick="toggleRecipe(this)">
+          <div class="recipe-emoji">🥜</div>
+          <div class="recipe-info"><div class="recipe-name">Fromage blanc + noix</div><div class="recipe-meta">Alternative amandes · 1 min · ~21g protéines</div></div>
+          <div class="recipe-tag rt-alt">ALT</div>
+        </div>
+        <div class="recipe-body"><div class="recipe-bi">
+          <div class="ingr-item">200g fromage blanc 0%</div>
+          <div class="ingr-item">20g noix (+ oméga-3 que les amandes)</div>
+          <div class="ingr-item">1 fruit de saison</div>
+          <div class="macros-row">
+            <div class="macro-box"><div class="macro-val">~21g</div><div class="macro-lbl">Protéines</div></div>
+            <div class="macro-box"><div class="macro-val">~240</div><div class="macro-lbl">Kcal</div></div>
+            <div class="macro-box"><div class="macro-val">1 min</div><div class="macro-lbl">Prépa</div></div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="recipe-card">
+        <div class="recipe-head" onclick="toggleRecipe(this)">
+          <div class="recipe-emoji">🍌</div>
+          <div class="recipe-info"><div class="recipe-name">Banane + café (pré-training)</div><div class="recipe-meta">30 min avant séance · 1 min · ~2g protéines</div></div>
+          <div class="recipe-tag rt-main">PRÉ-TRAINING</div>
+        </div>
+        <div class="recipe-body"><div class="recipe-bi">
+          <div class="ingr-item">1 banane mûre</div>
+          <div class="ingr-item">1 café noir (sans sucre)</div>
+          <div class="macros-row">
+            <div class="macro-box"><div class="macro-val">~2g</div><div class="macro-lbl">Protéines</div></div>
+            <div class="macro-box"><div class="macro-val">~100</div><div class="macro-lbl">Kcal</div></div>
+            <div class="macro-box"><div class="macro-val">1 min</div><div class="macro-lbl">Prépa</div></div>
+          </div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- TRACKER -->
+    <div class="page" id="page-tracker">
+      <div class="gp">
+        <div class="gph"><div class="gpt">Séances complétées</div><div class="gpp" id="tracker-pct">0%</div></div>
+        <div class="pbb"><div class="pbf" id="tracker-fill" style="width:0%"></div></div>
+        <div class="pbs" id="tracker-sub">0 / 60 séances</div>
+      </div>
+      <div id="tracker-list"></div>
+    </div>
+
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="navigate('home',this)"><div class="ni">🏠</div><div class="nl">Accueil</div></button>
+    <button class="nav-btn" onclick="navigate('seances',this)"><div class="ni">💪</div><div class="nl">Séances</div></button>
+    <button class="nav-btn" onclick="navigate('journal',this)"><div class="ni">📊</div><div class="nl">Calories</div></button>
+    <button class="nav-btn" onclick="navigate('nutri',this)"><div class="ni">🍽️</div><div class="nl">Recettes</div></button>
+    <button class="nav-btn" onclick="navigate('tracker',this)"><div class="ni">✅</div><div class="nl">Tracker</div></button>
+  </nav>
+</div>
+
+<script>
+const START=new Date('2025-06-14');
+const BMR=2320;
+const DAYS=[
+  {l:'Lun',type:'train',name:'Push',s:'Push'},
+  {l:'Mar',type:'train',name:'Pull',s:'Pull'},
+  {l:'Mer',type:'cardio',name:'HIIT',s:'HIIT'},
+  {l:'Jeu',type:'train',name:'Legs',s:'Legs'},
+  {l:'Ven',type:'train',name:'Upper',s:'Upper'},
+  {l:'Sam',type:'cardio',name:'Cardio',s:'Run'},
+  {l:'Dim',type:'rest',name:'Repos',s:'Repos'},
+];
+const WEEKS=[
+  {n:1,f:'Mise en route',d:'Phase 1 · Installer la routine',p:1},
+  {n:2,f:'Régularité',d:'Phase 1 · Tenir le rythme',p:1},
+  {n:3,f:'Alimentation cadrée',d:'Phase 1 · Les 5 règles',p:1},
+  {n:4,f:'Supersets',d:'Phase 2 · Passer à 4 séries',p:2},
+  {n:5,f:'Intensité',d:'Phase 2 · Repos 60s',p:2},
+  {n:6,f:'Mi-parcours',d:'Phase 2 · Photo comparaison',p:2},
+  {n:7,f:'Volume max',d:'Phase 2 · Supersets intensifiés',p:2},
+  {n:8,f:'Peak',d:'Phase 3 · HIIT 30 min',p:3},
+  {n:9,f:'Affinage',d:'Phase 3 · Glucides réduits le soir',p:3},
+  {n:10,f:'Dernière ligne !',d:'Phase 3 · Fin août',p:3},
+];
+const SDDAYS=[0,1,2,3,4,5];
+
+const MEALS=[
+  {cat:'☀️ Petit-déjeuner',items:[
+    {id:'f1',name:'Œufs brouillés avocat pain de mie',detail:'3-4 œufs + ½ avocat + 1 tranche',kcal:420,prot:35},
+    {id:'f2',name:'Yaourt grec + flocons + fruit',detail:'200g yaourt + 50g flocons + brugnon',kcal:380,prot:25},
+    {id:'f3',name:'Café noir',detail:'Sans sucre',kcal:5,prot:0},
+  ]},
+  {cat:'🍎 Collation matin',items:[
+    {id:'f4',name:'Fromage blanc + amandes + fruit',detail:'200g skyr + 20g amandes + 1 fruit',kcal:230,prot:22},
+    {id:'f5',name:'Fromage blanc + noix + fruit',detail:'200g skyr + 20g noix + 1 fruit',kcal:240,prot:21},
+    {id:'f6',name:'Banane seule',detail:'1 banane',kcal:90,prot:1},
+  ]},
+  {cat:'🍽️ Déjeuner',items:[
+    {id:'f7',name:'Bowl poulet riz tomate',detail:'150g poulet + 70g riz + tomate',kcal:500,prot:42},
+    {id:'f8',name:'Steak haché pâtes tomates cerises',detail:'150g steak + 80g pâtes + tomates',kcal:580,prot:43},
+    {id:'f9',name:'Salade thon maïs tomates',detail:'1 boîte thon + maïs + tomates',kcal:320,prot:35},
+    {id:'f10',name:'Omelette jambon riz',detail:'4 œufs + jambon + 100g riz',kcal:520,prot:40},
+    {id:'f11',name:'Pâtes thon sauce tomate',detail:'100g pâtes + thon + tomates',kcal:580,prot:35},
+  ]},
+  {cat:'⚡ Pré-training / Collation',items:[
+    {id:'f12',name:'Banane + café',detail:'Pré-training idéal',kcal:100,prot:1},
+    {id:'f13',name:'Pain de mie + fromage blanc',detail:'1 tranche + 100g fromage blanc',kcal:180,prot:12},
+  ]},
+  {cat:'🌙 Dîner',items:[
+    {id:'f14',name:'Steak haché + légumes rôtis',detail:'200g steak + légumes + fromage blanc',kcal:420,prot:40},
+    {id:'f15',name:'Poisson blanc + légumes vapeur',detail:'200g poisson + légumes',kcal:290,prot:38},
+    {id:'f16',name:'Poulet + crudités',detail:'150g poulet + tomate + concombre',kcal:230,prot:35},
+    {id:'f17',name:'Rillettes thon + avocat + pain',detail:'Thon + St Môret + avocat + ½ baguette',kcal:380,prot:20},
+  ]},
+  {cat:'🍫 Extras',items:[
+    {id:'f18',name:'Filet huile olive',detail:'~1 c. à café pour cuire',kcal:40,prot:0},
+    {id:'f19',name:'Fromage blanc dessert',detail:'100g fromage blanc 0%',kcal:60,prot:9},
+    {id:'f20',name:'1 brugnon / nectarine',detail:'Fruit frais',kcal:50,prot:1},
+  ]},
+];
+
+function gs(){try{return JSON.parse(localStorage.getItem('s2025')||'{}')}catch(e){return{}}}
+function ss(s){try{localStorage.setItem('s2025',JSON.stringify(s))}catch(e){}}
+function getDI(){const d=new Date().getDay();return d===0?6:d-1;}
+function getWN(){const d=Math.floor((new Date()-START)/(7*86400000));return Math.min(Math.max(d+1,1),10);}
+
+function renderToday(){
+  const di=getDI(),day=DAYS[di],wn=getWN();
+  document.getElementById('week-badge').textContent='S'+wn;
+  const map={Push:['🔥 PUSH','Épaules · Poitrine · Triceps'],Pull:['🏋️ PULL','Dos · Biceps'],HIIT:['⚡ HIIT CARDIO','Brûle-graisses · 20 min'],Legs:['🦵 LEGS + ABDOS + OBLIQUES','Cuisses · Abdos · Poignées d\'amour 🔥'],Upper:['💫 FULL UPPER','Focus épaules'],Cardio:['🏃 CARDIO','Marche ou Run'],Repos:['😴 REPOS','Récupération']};
+  const[t,s]=map[day.name]||[day.name,''];
+  document.getElementById('today-title').textContent=t;
+  document.getElementById('today-sub').textContent=s;
+  const btn=document.getElementById('today-action');
+  if(day.type==='rest'){btn.textContent='Voir les recettes →';btn.onclick=()=>navigate('nutri',document.querySelectorAll('.nav-btn')[3]);}
+  else{btn.textContent='Voir la séance →';btn.onclick=()=>navigate('seances',document.querySelectorAll('.nav-btn')[1]);}
+}
+
+function renderGrid(){
+  const g=document.getElementById('week-grid'),t=getDI();g.innerHTML='';
+  DAYS.forEach((d,i)=>{const tc=d.type==='train'?'dp-t':d.type==='cardio'?'dp-c':'dp-r';g.innerHTML+=`<div class="dp ${tc}${i===t?' today-dp':''}"><div class="dn">${d.l}</div><div class="dt">${d.s}</div></div>`;});
+}
+
+function renderWater(){
+  const s=gs(),f=s.water||0;
+  const L=(f*0.25).toFixed(2).replace(/\.?0+$/,'');
+  document.getElementById('water-amount').textContent=L+'L / 2.5L';
+  const g=document.getElementById('water-glasses');g.innerHTML='';
+  for(let i=0;i<10;i++){const b=document.createElement('button');b.className='wglass'+(i<f?' full':'');b.textContent='💧';b.onclick=()=>{const s2=gs();s2.water=(i<(s2.water||0))?i:(i+1);ss(s2);renderWater();};g.appendChild(b);}
+}
+function resetWater(){const s=gs();s.water=0;ss(s);renderWater();}
+
+function renderSteps(){
+  const s=gs(),steps=s.steps||0;
+  document.getElementById('steps-amount').textContent=steps.toLocaleString('fr')+' / 10 000';
+  document.getElementById('steps-fill').style.width=Math.min(steps/10000*100,100)+'%';
+  updateKcal(steps);
+}
+function addSteps(n){const s=gs();s.steps=Math.min((s.steps||0)+n,15000);ss(s);renderSteps();}
+function resetSteps(){const s=gs();s.steps=0;ss(s);renderSteps();}
+
+function getEaten(){const s=gs();let k=0;MEALS.forEach(m=>m.items.forEach(i=>{if(s['fj_'+i.id])k+=i.kcal;}));return k;}
+
+function updateKcal(steps){
+  const burn=Math.round(steps*0.035);
+  const total=BMR+burn;
+  const eaten=getEaten();
+  const deficit=total-eaten;
+  document.getElementById('kcal-steps-burn').textContent=burn;
+  document.getElementById('kcal-eaten').textContent=eaten;
+  document.getElementById('kcal-total').textContent=total;
+  const dEl=document.getElementById('kcal-def-val');
+  const lEl=document.getElementById('kcal-def-lbl');
+  dEl.textContent=(deficit>=0?'+':'')+deficit+' kcal';
+  if(deficit>=300&&deficit<=600){dEl.className='kcal-def-val def-ok';lEl.textContent='✅ Déficit idéal — tu sèches bien';}
+  else if(deficit<300&&deficit>=0){dEl.className='kcal-def-val def-low';lEl.textContent='⚠️ Déficit faible — mange un peu moins ou marche plus';}
+  else if(deficit<0){dEl.className='kcal-def-val def-high';lEl.textContent='⚠️ Surplus — tu as mangé plus que dépensé';}
+  else{dEl.className='kcal-def-val def-high';lEl.textContent='⚠️ Déficit trop élevé — risque perte muscle';}
+}
+
+function calcP(){const s=gs();let done=0,total=WEEKS.length*SDDAYS.length;WEEKS.forEach(w=>SDDAYS.forEach(d=>{if(s[`w${w.n}_d${d}`])done++;}));return{done,total,pct:Math.round(done/total*100)};}
+function updateP(){
+  const{done,total,pct}=calcP();
+  ['home','tracker'].forEach(p=>{
+    const f=document.getElementById(p+'-fill');
+    const pt=document.getElementById(p+'-pct');
+    const sl=document.getElementById(p+'-sub');
+    if(f)f.style.width=pct+'%';if(pt)pt.textContent=pct+'%';if(sl)sl.textContent=done+' séances complétées sur '+total;
+  });
+}
+
+function buildTracker(){
+  const list=document.getElementById('tracker-list');const s=gs();const cw=getWN();list.innerHTML='';
+  WEEKS.forEach(w=>{
+    const done=SDDAYS.filter(d=>s[`w${w.n}_d${d}`]).length;
+    const el=document.createElement('div');el.className='wt';
+    el.innerHTML=`<div class="wth" onclick="toggleWT(this)"><div class="wtnum">S${w.n}</div><div class="wtinfo"><div class="wttitle">${w.f}</div><div class="wtsub">Phase ${w.p} · ${w.d.split('·')[1]||''}</div></div><div class="wtprog">${done}/${SDDAYS.length}</div></div><div class="wtdays${w.n===cw?' open':''}"><div class="daychecks" id="wt-${w.n}"></div></div>`;
+    list.appendChild(el);
+    const ch=el.querySelector(`#wt-${w.n}`);
+    SDDAYS.forEach(di=>{
+      const key=`w${w.n}_d${di}`,d=DAYS[di];
+      const btn=document.createElement('button');btn.className='dcheck'+(s[key]?' done':'');
+      btn.textContent=(s[key]?'✓ ':'')+d.l+' '+d.s;
+      btn.onclick=()=>{const st=gs();st[key]=!st[key];ss(st);btn.classList.toggle('done',st[key]);btn.textContent=(st[key]?'✓ ':'')+d.l+' '+d.s;const nd=SDDAYS.filter(x=>st[`w${w.n}_d${x}`]).length;el.querySelector('.wtprog').textContent=nd+'/'+SDDAYS.length;updateP();};
+      ch.appendChild(btn);
+    });
+  });
+}
+
+function buildJournal(){
+  const c=document.getElementById('fj-meals-container');if(!c)return;
+  const s=gs();c.innerHTML='';
+  MEALS.forEach(meal=>{
+    const div=document.createElement('div');div.className='fj-meal';
+    div.innerHTML=`<div class="fj-meal-title">${meal.cat}</div>`;
+    meal.items.forEach(item=>{
+      const sel=s['fj_'+item.id]||false;
+      const el=document.createElement('div');el.className='fj-item'+(sel?' selected':'');
+      el.innerHTML=`<div class="fj-check">${sel?'✓':''}</div><div class="fj-item-info"><div class="fj-item-name">${item.name}</div><div class="fj-item-detail">${item.detail} · ${item.prot}g prot</div></div><div class="fj-item-kcal">${item.kcal} kcal</div>`;
+      el.onclick=()=>{const st=gs();st['fj_'+item.id]=!st['fj_'+item.id];ss(st);el.classList.toggle('selected',st['fj_'+item.id]);el.querySelector('.fj-check').textContent=st['fj_'+item.id]?'✓':'';updateJournal();};
+      div.appendChild(el);
+    });
+    c.appendChild(div);
+  });
+  updateJournal();
+}
+
+function updateJournal(){
+  const s=gs();let k=0,p=0;
+  MEALS.forEach(m=>m.items.forEach(i=>{if(s['fj_'+i.id]){k+=i.kcal;p+=i.prot;}}));
+  const rem=Math.max(2000-k,0);
+  const pct=Math.min(k/2000*100,100);
+  document.getElementById('fj-kcal').textContent=k;
+  document.getElementById('fj-prot').textContent=p+'g';
+  document.getElementById('fj-remain').textContent=k>2000?'⚠️+'+(k-2000):rem;
+  const bar=document.getElementById('fj-bar');
+  bar.style.width=pct+'%';
+  bar.style.background=k>2000?'#e04040':k>1700?'var(--orange)':'var(--green)';
+  document.getElementById('fj-bar-txt').textContent=k+' / 2000 kcal · '+p+'g protéines';
+  updateKcal(gs().steps||0);
+}
+
+function resetJournal(){const s=gs();MEALS.forEach(m=>m.items.forEach(i=>{delete s['fj_'+i.id];}));ss(s);buildJournal();}
+
+function toggleCard(h){const b=h.nextElementSibling,c=h.querySelector('.chev');b.classList.toggle('open');if(c)c.classList.toggle('open');}
+function toggleRecipe(h){h.nextElementSibling.classList.toggle('open');}
+function toggleWT(h){h.nextElementSibling.classList.toggle('open');}
+function navigate(p,btn){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  if(btn)btn.classList.add('active');
+  document.querySelector('.content').scrollTop=0;
+}
+
+renderToday();renderGrid();renderWater();renderSteps();updateP();buildTracker();buildJournal();
+</script>
+</body>
+</html>
